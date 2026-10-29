@@ -1,0 +1,32 @@
+name: wiki
+
+services:
+  proxy:
+    image: nginx:1.27-alpine
+    container_name: wiki-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+
+  blue: &app
+    image: ${IMAGE}:${BLUE_TAG:-none}
+    container_name: wiki-blue
+    restart: unless-stopped
+    volumes:
+      - wikidata:/wiki/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/healthz >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+
+  green:
+    <<: *app
+    image: ${IMAGE}:${GREEN_TAG:-none}
+    container_name: wiki-green
+
+volumes:
+  wikidata:
