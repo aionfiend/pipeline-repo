@@ -37,6 +37,7 @@ point_proxy() {
 }
 
 backup_db() {
+  docker volume inspect wiki_wikidata >/dev/null 2>&1 || return 0
   docker run --rm -v wiki_wikidata:/data -v "$PWD/backups:/backups" alpine \
     sh -c 'if [ -f /data/db.sqlite ]; then cp /data/db.sqlite /backups/db-$(date +%Y%m%d-%H%M%S).sqlite; fi'
 }
